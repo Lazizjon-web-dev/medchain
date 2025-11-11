@@ -1,0 +1,47 @@
+use anchor_lang::prelude::*;
+
+#[account]
+pub struct AccessGrant {
+    pub record: Pubkey,
+    pub patient: Pubkey,
+    pub doctor: Pubkey,
+    pub encrypted_key: String, // Encrypted with public key of the doctor
+    pub key_version: u64,
+    pub granted_at: i64,
+    pub expires_at: i64,
+    pub is_active: bool,
+    pub bump: u8,
+}
+
+#[account]
+pub struct Doctor {
+    pub authority: Pubkey,
+    pub name: String,
+    pub specialization: String,
+    pub license_id: String,
+    pub verified: bool,
+    pub created_at: i64,
+    pub bump: u8,
+}
+
+#[account]
+pub struct MedicalRecord {
+    pub patient: Pubkey,
+    pub record_id: u64,
+    pub ipfs_hash: String,
+    pub record_type: String,
+    pub description: String,
+    pub created_at: i64,
+    pub encrypted_key: String,
+    pub current_key_version: u64,
+    pub bump: u8,
+}
+
+#[account]
+pub struct Patient {
+    pub authority: Pubkey,
+    pub name: String,
+    pub record_count: u64,
+    pub created_at: i64,
+    pub bump: u8,
+}
