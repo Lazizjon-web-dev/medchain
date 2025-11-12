@@ -21,9 +21,9 @@ pub struct MedicalRecordAdded {
 // Event for granting access to a medical record
 #[event]
 pub struct AccessGranted {
-    record: Pubkey,
-    patient: Pubkey,
-    doctor: Pubkey,
-    granted_at: i64,
-    expires_at: i64,
+    pub record: Pubkey,
+    pub patient: Pubkey,
+    pub doctor: Pubkey,
+    pub granted_at: i64,
+    pub expires_at: i64,
 }
