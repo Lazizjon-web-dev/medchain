@@ -116,10 +116,16 @@ pub mod medchain {
         ctx: Context<GrantAccess>,
         doctor_wallet: Pubkey,
         duration_days: u64, // 0 = permanent access (use cautiously)
+        encrypted_key_for_doctor: String,
     ) -> Result<()> {
         // Verify the medical record belongs to the patient
         if ctx.accounts.medical_record.patient != ctx.accounts.patient_account.key() {
             return err!(MedChainError::Unauthorized);
+        }
+
+        // Validate the encrypted key length
+        if encrypted_key_for_doctor.len() > ENCRYPTED_KEY_LENGTH {
+            return err!(MedChainError::EncryptedKeyTooLong);
         }
 
         let access_grant = &mut ctx.accounts.access_grant;
@@ -132,6 +138,8 @@ pub mod medchain {
         access_grant.patient = ctx.accounts.patient_account.key();
         access_grant.granted_at = current_timestamp;
         access_grant.is_active = true;
+        access_grant.encrypted_key = encrypted_key_for_doctor;
+        access_grant.key_version = 1; // Start with version 1
         access_grant.bump = ctx.bumps.access_grant;
 
         // Calculate expiration timestamp
@@ -156,6 +164,7 @@ pub mod medchain {
             patient: access_grant.patient,
             granted_at: access_grant.granted_at,
             expires_at: access_grant.expires_at,
+            key_version: access_grant.key_version,
         });
 
         Ok(())
