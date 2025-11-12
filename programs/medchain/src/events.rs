@@ -26,4 +26,5 @@ pub struct AccessGranted {
     pub doctor: Pubkey,
     pub granted_at: i64,
     pub expires_at: i64,
+    pub key_version: u64,
 }
