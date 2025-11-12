@@ -62,3 +62,21 @@ pub struct GrantAccess<'info> {
 
     pub system_program: Program<'info, System>,
 }
+
+#[derive(Accounts)]
+pub struct RotateRecordKey<'info> {
+    #[account(mut)]
+    pub patient: Signer<'info>,
+
+    #[account(
+        has_one = authority,
+        seeds = [b"patient", patient.key().as_ref()],
+        bump = patient_account.bump,
+    )]
+    pub patient_account: Account<'info, PatientAccount>,
+
+    #[account(mut, has_one = patient)]
+    pub medical_record: Account<'info, MedicalRecord>,
+
+    pub system_program: Program<'info, System>,
+}
