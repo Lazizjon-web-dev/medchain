@@ -3,9 +3,9 @@ use anchor_lang::prelude::*;
 // Event for patient initialization
 #[event]
 pub struct PatientInitialized {
-    pub patient: Pubkey,    // The PDA address of the patient account
-    pub authority: Pubkey,  // The wallet that controls it
-    pub timestamp: i64,     // When it was created
+    pub patient: Pubkey,   // The PDA address of the patient account
+    pub authority: Pubkey, // The wallet that controls it
+    pub timestamp: i64,    // When it was created
 }
 
 // Event for adding a medical record
@@ -16,4 +16,14 @@ pub struct MedicalRecordAdded {
     pub record_id: u64,
     pub record_type: String,
     pub timestamp: i64,
+}
+
+// Event for granting access to a medical record
+#[event]
+pub struct AccessGranted {
+    record: Pubkey,
+    patient: Pubkey,
+    doctor: Pubkey,
+    granted_at: i64,
+    expires_at: i64,
 }
