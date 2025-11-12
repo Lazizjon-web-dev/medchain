@@ -1,4 +1,4 @@
-use crate::constants::MAX_NAME_LENGTH;
+use crate::constants::{ENCRYPTED_KEY_LENGTH, MAX_NAME_LENGTH};
 use anchor_lang::prelude::*;
 
 #[account]
@@ -12,6 +12,19 @@ pub struct AccessGrant {
     pub expires_at: i64,
     pub is_active: bool,
     pub bump: u8,
+}
+
+impl AccessGrant {
+    pub const LEN: usize = 8 + // Discriminator
+    32 + // record (Pubkey)
+    32 + // patient (Pubkey)
+    32 + // doctor (Pubkey)
+    (4 + ENCRYPTED_KEY_LENGTH) + // encrypted_key (String prefix + content)
+    8 + // key_version (u64)
+    8 + // granted_at (i64)
+    8 + // expires_at (i64)
+    1 + // is_active (bool)
+    1; // bump (u8)
 }
 
 #[account]
