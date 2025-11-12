@@ -28,3 +28,12 @@ pub struct AccessGranted {
     pub expires_at: i64,
     pub key_version: u64,
 }
+
+// Event for rotating the encryption key of a medical record
+#[event]
+pub struct RecordKeyRotated {
+    pub record: Pubkey,
+    pub patient: Pubkey,
+    pub new_key_version: u64,
+    pub rotated_at: i64,
+}
