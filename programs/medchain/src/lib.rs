@@ -1,8 +1,8 @@
 use crate::{
     constants::*,
     errors::MedChainError,
-    events::{AccessGranted, MedicalRecordAdded, PatientInitialized},
-    instructions::{AddMedicalRecord, GrantAccess, InitializePatient},
+    events::{AccessGranted, MedicalRecordAdded, PatientInitialized, RecordKeyRotated},
+    instructions::{AddMedicalRecord, GrantAccess, InitializePatient, RotateRecordKey},
 };
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
@@ -165,6 +165,39 @@ pub mod medchain {
             granted_at: access_grant.granted_at,
             expires_at: access_grant.expires_at,
             key_version: access_grant.key_version,
+        });
+
+        Ok(())
+    }
+
+    pub fn rotate_record_key(
+        ctx: Context<RotateRecordKey>,
+        new_ipfs_hash: String,
+        new_encrypted_key: String, // New symmetric key encrypted with patient's public key
+    ) -> Result<()> {
+        // Validate inputs
+        if new_ipfs_hash.len() > IPFS_HASH_LENGTH {
+            return err!(MedChainError::IpfsHashTooLong);
+        }
+        if new_encrypted_key.len() > ENCRYPTED_KEY_LENGTH {
+            return err!(MedChainError::EncryptedKeyTooLong);
+        }
+
+        let medical_record = &mut ctx.accounts.medical_record;
+
+        // Update the medical record with new IPFS hash and key
+        medical_record.ipfs_hash = new_ipfs_hash;
+        medical_record.encrypted_key = new_encrypted_key;
+        medical_record.key_version = medical_record
+            .key_version
+            .checked_add(1)
+            .ok_or(MedChainError::ArithmeticOverflow)?;
+
+        emit!(RecordKeyRotated {
+            record: medical_record.key(),
+            patient: medical_record.patient,
+            new_key_version: medical_record.key_version,
+            rotated_at: Clock::get()?.unix_timestamp,
         });
 
         Ok(())
