@@ -1,8 +1,8 @@
 use crate::{
     constants::*,
     errors::MedChainError,
-    events::{MedicalRecordAdded, PatientInitialized},
-    instructions::{AddMedicalRecord, InitializePatient},
+    events::{AccessGranted, MedicalRecordAdded, PatientInitialized},
+    instructions::{AddMedicalRecord, GrantAccess, InitializePatient},
 };
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
@@ -107,6 +107,55 @@ pub mod medchain {
             record_id,
             record_type: medical_record.record_type.clone(),
             timestamp: medical_record.created_at,
+        });
+
+        Ok(())
+    }
+
+    pub fn grant_access(
+        ctx: Context<GrantAccess>,
+        doctor_wallet: Pubkey,
+        duration_days: u64, // 0 = permanent access (use cautiously)
+    ) -> Result<()> {
+        // Verify the medical record belongs to the patient
+        if ctx.accounts.medical_record.patient != ctx.accounts.patient_account.key() {
+            return err!(MedChainError::Unauthorized);
+        }
+
+        let access_grant = &mut ctx.accounts.access_grant;
+        let clock = Clock::get()?;
+        let current_timestamp = clock.unix_timestamp;
+
+        // Set up the access grant
+        access_grant.record = ctx.accounts.medical_record.key();
+        access_grant.doctor = doctor_wallet;
+        access_grant.patient = ctx.accounts.patient_account.key();
+        access_grant.granted_at = current_timestamp;
+        access_grant.is_active = true;
+        access_grant.bump = ctx.bumps.access_grant;
+
+        // Calculate expiration timestamp
+        if duration_days == 0 {
+            // Permanent access (patient can still revoke)
+            access_grant.expires_at = 0;
+        } else {
+            // Convert days to seconds and add to current time
+            let duration_seconds = duration_days
+                .checked_mul(24 * 60 * 60) // days * hours * minutes * seconds
+                .ok_or(MedChainError::ArithmeticOverflow)?;
+
+            access_grant.expires_at = current_timestamp
+                .checked_add(duration_seconds as i64)
+                .ok_or(MedChainError::ArithmeticOverflow)?;
+        }
+
+        // Emit event for frontend and audit trail
+        emit!(AccessGranted {
+            record: access_grant.record,
+            doctor: access_grant.doctor,
+            patient: access_grant.patient,
+            granted_at: access_grant.granted_at,
+            expires_at: access_grant.expires_at,
         });
 
         Ok(())
