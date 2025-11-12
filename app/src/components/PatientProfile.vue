@@ -2,7 +2,7 @@
 import PhoneIcon from './icons/PhoneIcon.vue';
 import ChatIcon from './icons/ChatIcon.vue';
 import EnterButton from './EnterButton.vue';
-import formatDate from '../utils/formatDate.ts';
+import formatDate from '../utils/formatDate';
 
 const { patient }= defineProps({
     patient: {
