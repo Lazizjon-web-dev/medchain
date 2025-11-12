@@ -20,4 +20,6 @@ pub enum MedChainError {
     AccessRevoked,
     #[msg("Invalid record ID")]
     InvalidRecordId,
+    #[msg("Arithmetic overflow occurred")]
+    ArithmeticOverflow,
 }
