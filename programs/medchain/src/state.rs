@@ -47,7 +47,7 @@ pub struct MedicalRecord {
     pub description: String,
     pub created_at: i64,
     pub encrypted_key: String,
-    pub current_key_version: u64,
+    pub key_version: u64,
     pub bump: u8,
 }
 
@@ -60,7 +60,7 @@ impl MedicalRecord {
     (4 + MAX_DESCRIPTION_LENGTH) + // description (String prefix + content)
     8 + // created_at (i64)
     (4 + ENCRYPTED_KEY_LENGTH) + // encrypted_key (String prefix + content)
-    8 + // current_key_version (u64)
+    8 + // key_version (u64)
     1; // bump (u8)
 }
 
