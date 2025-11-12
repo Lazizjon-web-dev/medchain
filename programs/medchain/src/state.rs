@@ -1,3 +1,4 @@
+use crate::constants::MAX_NAME_LENGTH;
 use anchor_lang::prelude::*;
 
 #[account]
@@ -38,10 +39,19 @@ pub struct MedicalRecord {
 }
 
 #[account]
-pub struct Patient {
+pub struct PatientAccount {
     pub authority: Pubkey,
     pub name: String,
     pub record_count: u64,
     pub created_at: i64,
     pub bump: u8,
+}
+
+impl PatientAccount {
+    pub const LEN: usize = 8 + // Discriminator
+    32 + // authority (Pubkey)
+    (4 + MAX_NAME_LENGTH) + // name (String prefix + content)
+    8 + // record_count (u64)
+    8 + // created_at (i64)
+    1; // bump (u8)
 }
