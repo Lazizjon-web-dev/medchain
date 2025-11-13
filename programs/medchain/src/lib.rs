@@ -1,8 +1,12 @@
 use crate::{
     constants::*,
     errors::MedChainError,
-    events::{AccessGranted, MedicalRecordAdded, PatientInitialized, RecordKeyRotated},
-    instructions::{AddMedicalRecord, GrantAccess, InitializePatient, RotateRecordKey},
+    events::{
+        AccessGranted, DoctorKeyUpdated, MedicalRecordAdded, PatientInitialized, RecordKeyRotated,
+    },
+    instructions::{
+        AddMedicalRecord, GrantAccess, InitializePatient, RotateRecordKey, UpdateDoctorKey,
+    },
 };
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::clock::Clock;
@@ -198,6 +202,39 @@ pub mod medchain {
             patient: medical_record.patient,
             new_key_version: medical_record.key_version,
             rotated_at: Clock::get()?.unix_timestamp,
+        });
+
+        Ok(())
+    }
+
+    pub fn update_doctor_key(
+        ctx: Context<UpdateDoctorKey>,
+        doctor_wallet: Pubkey,
+        new_encrypted_key_for_doctor: String, // New symmetric key encrypted with doctor's public key
+    ) -> Result<()> {
+        // Validate input
+        if new_encrypted_key_for_doctor.len() > ENCRYPTED_KEY_LENGTH {
+            return err!(MedChainError::EncryptedKeyTooLong);
+        }
+
+        let access_grant = &mut ctx.accounts.access_grant;
+        let medical_record = &ctx.accounts.medical_record;
+
+        // Verify the access grant is still active
+        if !access_grant.is_active {
+            return err!(MedChainError::AccessRevoked);
+        }
+
+        // Update the doctor's encrypted key and sync key version
+        access_grant.encrypted_key = new_encrypted_key_for_doctor;
+        access_grant.key_version = medical_record.key_version;
+
+        emit!(DoctorKeyUpdated {
+            record: medical_record.key(),
+            doctor: doctor_wallet,
+            patient: access_grant.patient,
+            key_version: access_grant.key_version,
+            updated_at: Clock::get()?.unix_timestamp,
         });
 
         Ok(())
