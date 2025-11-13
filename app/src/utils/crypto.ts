@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer'
+import { TypeUtils as typeUtils } from './type'
 export interface KeyPair {
   publicKey: string
   privateKey: string
@@ -98,7 +99,7 @@ export class CryptoUtils {
       )
 
       const exportedKey = await this.exportKey(key)
-      const saltBase64 = this.arrayBufferToBase64(salt)
+      const saltBase64 = typeUtils.arrayBufferToBase64(salt)
 
       return { key: exportedKey, salt: saltBase64 }
     } catch (error) {
@@ -122,7 +123,7 @@ export class CryptoUtils {
     try {
       const encoder = new TextEncoder()
       const passwordBuffer = encoder.encode(password)
-      const saltBuffer = this.base64ToArrayBuffer(salt)
+      const saltBuffer = typeUtils.base64ToArrayBuffer(salt)
 
       const keyMaterial = await crypto.subtle.importKey(
         'raw',
@@ -171,7 +172,7 @@ export class CryptoUtils {
 
       const encrypted = await crypto.subtle.encrypt({ name: this.RSA_ALGORITHM }, key, dataBuffer)
 
-      return this.arrayBufferToBase64(encrypted)
+      return typeUtils.arrayBufferToBase64(encrypted)
     } catch (error) {
       throw new Error(
         `RSA encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -192,7 +193,7 @@ export class CryptoUtils {
   static async decryptWithRSA(privateKey: string, encryptedData: string): Promise<string> {
     try {
       const key = await this.importPrivateKey(privateKey)
-      const encryptedBuffer = this.base64ToArrayBuffer(encryptedData)
+      const encryptedBuffer = typeUtils.base64ToArrayBuffer(encryptedData)
 
       const decrypted = await crypto.subtle.decrypt(
         { name: this.RSA_ALGORITHM },
@@ -239,8 +240,8 @@ export class CryptoUtils {
       )
 
       return {
-        encryptedData: this.arrayBufferToBase64(encrypted),
-        iv: this.arrayBufferToBase64(iv),
+        encryptedData: typeUtils.arrayBufferToBase64(encrypted),
+        iv: typeUtils.arrayBufferToBase64(iv),
         salt: '', // Not used for pre-derived keys
       }
     } catch (error) {
@@ -264,8 +265,8 @@ export class CryptoUtils {
   static async decryptWithAES(key: string, encryptedData: string, iv: string): Promise<string> {
     try {
       const cryptoKey = await this.importAESKey(key)
-      const encryptedBuffer = this.base64ToArrayBuffer(encryptedData)
-      const ivBuffer = this.base64ToArrayBuffer(iv)
+      const encryptedBuffer = typeUtils.base64ToArrayBuffer(encryptedData)
+      const ivBuffer = typeUtils.base64ToArrayBuffer(iv)
 
       const decrypted = await crypto.subtle.decrypt(
         {
@@ -310,7 +311,7 @@ export class CryptoUtils {
   static async generateRandomHash(length: number = 32): Promise<string> {
     const randomBytes = this.generateRandomBytes(length)
     const hashBuffer = await crypto.subtle.digest(this.HASH_ALGORITHM, Buffer.from(randomBytes))
-    return this.arrayBufferToHex(hashBuffer).substring(0, length)
+    return typeUtils.arrayBufferToHex(hashBuffer).substring(0, length)
   }
 
   /**
@@ -325,7 +326,7 @@ export class CryptoUtils {
     const encoder = new TextEncoder()
     const dataBuffer = encoder.encode(data)
     const hashBuffer = await crypto.subtle.digest(this.HASH_ALGORITHM, dataBuffer)
-    return this.arrayBufferToHex(hashBuffer)
+    return typeUtils.arrayBufferToHex(hashBuffer)
   }
 
   /**
@@ -353,7 +354,7 @@ export class CryptoUtils {
    */
   private static async exportKey(key: CryptoKey): Promise<string> {
     const exported = await crypto.subtle.exportKey(key.type === 'public' ? 'spki' : 'pkcs8', key)
-    return this.arrayBufferToBase64(exported)
+    return typeUtils.arrayBufferToBase64(exported)
   }
 
   /**
@@ -365,7 +366,7 @@ export class CryptoUtils {
    * console.log(publicKey);
    */
   private static async importPublicKey(base64Key: string): Promise<CryptoKey> {
-    const keyData = this.base64ToArrayBuffer(base64Key)
+    const keyData = typeUtils.base64ToArrayBuffer(base64Key)
     return await crypto.subtle.importKey(
       'spki',
       keyData,
@@ -387,7 +388,7 @@ export class CryptoUtils {
    * console.log(privateKey);
    */
   private static async importPrivateKey(base64Key: string): Promise<CryptoKey> {
-    const keyData = this.base64ToArrayBuffer(base64Key)
+    const keyData = typeUtils.base64ToArrayBuffer(base64Key)
     return await crypto.subtle.importKey(
       'pkcs8',
       keyData,
@@ -409,7 +410,7 @@ export class CryptoUtils {
    * console.log(aesKey);
    */
   private static async importAESKey(base64Key: string): Promise<CryptoKey> {
-    const keyData = this.base64ToArrayBuffer(base64Key)
+    const keyData = typeUtils.base64ToArrayBuffer(base64Key)
     return await crypto.subtle.importKey(
       'raw',
       keyData,
@@ -417,58 +418,6 @@ export class CryptoUtils {
       true,
       ['encrypt', 'decrypt'],
     )
-  }
-
-  /**
-   * Convert base64 string to ArrayBuffer
-   * @param {string} base64 The base64 encoded string
-   * @returns {ArrayBuffer} The decoded ArrayBuffer
-   * @example
-   * const arrayBuffer = CryptoUtils.base64ToArrayBuffer('base64String');
-   * console.log(arrayBuffer);
-   */
-  private static base64ToArrayBuffer(base64: string): ArrayBuffer {
-    const binary = atob(base64)
-    const bytes = new Uint8Array(binary.length)
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i)
-    }
-    return bytes.buffer
-  }
-
-  /**
-   * Convert ArrayBuffer or Uint8Array to base64 string
-   * @param {ArrayBuffer | Uint8Array} buffer The input buffer
-   * @returns {string} The base64 encoded string
-   * @example
-   * const base64String = CryptoUtils.arrayBufferToBase64(arrayBuffer);
-   * console.log(base64String);
-   */
-  private static arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
-    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer)
-    let binary = ''
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i] ?? 0)
-    }
-    return btoa(binary)
-  }
-
-  /**
-   * Convert ArrayBuffer or Uint8Array to hex string
-   * @param {ArrayBuffer | Uint8Array} buffer The input buffer
-   * @returns {string} The hex encoded string
-   * @example
-   * const hexString = CryptoUtils.arrayBufferToHex(arrayBuffer);
-   * console.log(hexString);
-   */
-  private static arrayBufferToHex(buffer: ArrayBuffer | Uint8Array): string {
-    const byteArray = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer)
-    const hexParts: string[] = []
-    for (let i = 0; i < byteArray.length; i++) {
-      const hex = byteArray[i]?.toString(16)?.padStart(2, '0') ?? '00'
-      hexParts.push(hex)
-    }
-    return hexParts.join('')
   }
 
   /**
