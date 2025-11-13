@@ -25,7 +25,266 @@ export class CryptoUtils {
   private static readonly IV_LENGTH = 12 // 96 bits for GCM
   private static readonly SALT_LENGTH = 16
   private static readonly ITERATIONS = 100000
-  
+
+  /**
+   * Generate a secure RSA key pair for asymmetric encryption
+   * @returns {Promise<KeyPair>} The generated RSA key pair
+   * @throws {Error} If key generation fails
+   * @example
+   * const keyPair = await CryptoUtils.generateRSAKeyPair();
+   * console.log(keyPair.publicKey);
+   * console.log(keyPair.privateKey);
+   * @example
+   * const { publicKey, privateKey } = await CryptoUtils.generateRSAKeyPair();
+   * console.log(publicKey);
+   * console.log(privateKey);
+   */
+  static async generateRSAKeyPair(): Promise<KeyPair> {
+    try {
+      const keyPair = await crypto.subtle.generateKey(
+        {
+          name: this.RSA_ALGORITHM,
+          modulusLength: this.RSA_MODULUS_LENGTH,
+          publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // 65537
+          hash: this.HASH_ALGORITHM,
+        },
+        true, // extractable
+        ['encrypt', 'decrypt'],
+      )
+
+      const publicKey = await this.exportKey(keyPair.publicKey)
+      const privateKey = await this.exportKey(keyPair.privateKey)
+
+      return { publicKey, privateKey }
+    } catch (error) {
+      throw new Error(
+        `RSA key generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * Generate a secure AES key for symmetric encryption
+   * @returns {Promise<AesKeyResult>} The generated AES key and salt
+   * @throws {Error} If key generation fails
+   * @example
+   * const aesKeyResult = await CryptoUtils.generateAESKey();
+   * console.log(aesKeyResult.key);
+   * console.log(aesKeyResult.salt);
+   * @example
+   * const { key, salt } = await CryptoUtils.generateAESKey();
+   * console.log(key);
+   * console.log(salt);
+   */
+  static async generateAESKey(): Promise<AesKeyResult> {
+    try {
+      const salt = this.generateRandomBytes(this.SALT_LENGTH)
+      const randomBytes = Buffer.from(this.generateRandomBytes(32))
+      const keyMaterial = await crypto.subtle.importKey('raw', randomBytes, 'PBKDF2', false, [
+        'deriveKey',
+      ])
+
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: this.KEY_DERIVATION_ALGORITHM,
+          salt: Buffer.from(salt),
+          iterations: this.ITERATIONS,
+          hash: this.HASH_ALGORITHM,
+        },
+        keyMaterial,
+        { name: this.AES_ALGORITHM, length: this.AES_KEY_LENGTH },
+        true,
+        ['encrypt', 'decrypt'],
+      )
+
+      const exportedKey = await this.exportKey(key)
+      const saltBase64 = this.arrayBufferToBase64(salt)
+
+      return { key: exportedKey, salt: saltBase64 }
+    } catch (error) {
+      throw new Error(
+        `AES key generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * Derive AES key from password using PBKDF2
+   * @param {string} password The password to derive the key from
+   * @param {string} salt The salt to use in key derivation (base64 encoded)
+   * @returns {Promise<string>} The derived AES key (base64 encoded)
+   * @throws {Error} If key derivation fails
+   * @example
+   * const derivedKey = await CryptoUtils.deriveKeyFromPassword('myPassword', 'base64Salt');
+   * console.log(derivedKey);
+   */
+  static async deriveKeyFromPassword(password: string, salt: string): Promise<string> {
+    try {
+      const encoder = new TextEncoder()
+      const passwordBuffer = encoder.encode(password)
+      const saltBuffer = this.base64ToArrayBuffer(salt)
+
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        passwordBuffer,
+        this.KEY_DERIVATION_ALGORITHM,
+        false,
+        ['deriveKey'],
+      )
+
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: this.KEY_DERIVATION_ALGORITHM,
+          salt: saltBuffer,
+          iterations: this.ITERATIONS,
+          hash: this.HASH_ALGORITHM,
+        },
+        keyMaterial,
+        { name: this.AES_ALGORITHM, length: this.AES_KEY_LENGTH },
+        true,
+        ['encrypt', 'decrypt'],
+      )
+
+      return await this.exportKey(key)
+    } catch (error) {
+      throw new Error(
+        `Key derivation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * Encrypt data with RSA public key
+   * @param {string} publicKey The RSA public key (base64 encoded)
+   * @param {string} data The data to encrypt
+   * @returns {Promise<string>} The encrypted data (base64 encoded)
+   * @throws {Error} If encryption fails
+   * @example
+   * const encryptedData = await CryptoUtils.encryptWithRSA(publicKey, 'myData');
+   * console.log(encryptedData);
+   */
+  static async encryptWithRSA(publicKey: string, data: string): Promise<string> {
+    try {
+      const key = await this.importPublicKey(publicKey)
+      const encoder = new TextEncoder()
+      const dataBuffer = encoder.encode(data)
+
+      const encrypted = await crypto.subtle.encrypt({ name: this.RSA_ALGORITHM }, key, dataBuffer)
+
+      return this.arrayBufferToBase64(encrypted)
+    } catch (error) {
+      throw new Error(
+        `RSA encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * Decrypt data with RSA private key
+   * @param {string} privateKey The RSA private key (base64 encoded)
+   * @param {string} encryptedData The data to decrypt (base64 encoded)
+   * @returns {Promise<string>} The decrypted data
+   * @throws {Error} If decryption fails
+   * @example
+   * const decryptedData = await CryptoUtils.decryptWithRSA(privateKey, encryptedData);
+   * console.log(decryptedData);
+   */
+  static async decryptWithRSA(privateKey: string, encryptedData: string): Promise<string> {
+    try {
+      const key = await this.importPrivateKey(privateKey)
+      const encryptedBuffer = this.base64ToArrayBuffer(encryptedData)
+
+      const decrypted = await crypto.subtle.decrypt(
+        { name: this.RSA_ALGORITHM },
+        key,
+        encryptedBuffer,
+      )
+
+      const decoder = new TextDecoder()
+      return decoder.decode(decrypted)
+    } catch (error) {
+      throw new Error(
+        `RSA decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * Encrypt data with AES key
+   * @param {string} key The AES key (base64 encoded)
+   * @param {string} data The data to encrypt
+   * @returns {Promise<EncryptionResult>} The encrypted data, IV, and salt
+   * @throws {Error} If encryption fails
+   * @example
+   * const encryptionResult = await CryptoUtils.encryptWithAES(aesKey, 'myData');
+   * console.log(encryptionResult.encryptedData);
+   * console.log(encryptionResult.iv);
+   * console.log(encryptionResult.salt); // Not used for pre-derived keys
+   */
+  static async encryptWithAES(key: string, data: string): Promise<EncryptionResult> {
+    try {
+      const cryptoKey = await this.importAESKey(key)
+      const iv = Buffer.from(this.generateRandomBytes(this.IV_LENGTH))
+      const encoder = new TextEncoder()
+      const dataBuffer = encoder.encode(data)
+      //const salt = this.arrayBufferToBase64(this.generateRandomBytes(this.SALT_LENGTH))
+
+      const encrypted = await crypto.subtle.encrypt(
+        {
+          name: this.AES_ALGORITHM,
+          iv: iv,
+        },
+        cryptoKey,
+        dataBuffer,
+      )
+
+      return {
+        encryptedData: this.arrayBufferToBase64(encrypted),
+        iv: this.arrayBufferToBase64(iv),
+        salt: '', // Not used for pre-derived keys
+      }
+    } catch (error) {
+      throw new Error(
+        `AES encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * Decrypt data with AES key
+   * @param {string} key The AES key (base64 encoded)
+   * @param {string} encryptedData The data to decrypt (base64 encoded)
+   * @param {string} iv The initialization vector (base64 encoded)
+   * @returns {Promise<string>} The decrypted data
+   * @throws {Error} If decryption fails
+   * @example
+   * const decryptedData = await CryptoUtils.decryptWithAES(aesKey, encryptedData, iv);
+   * console.log(decryptedData);
+   */
+  static async decryptWithAES(key: string, encryptedData: string, iv: string): Promise<string> {
+    try {
+      const cryptoKey = await this.importAESKey(key)
+      const encryptedBuffer = this.base64ToArrayBuffer(encryptedData)
+      const ivBuffer = this.base64ToArrayBuffer(iv)
+
+      const decrypted = await crypto.subtle.decrypt(
+        {
+          name: this.AES_ALGORITHM,
+          iv: ivBuffer,
+        },
+        cryptoKey,
+        encryptedBuffer,
+      )
+
+      const decoder = new TextDecoder()
+      return decoder.decode(decrypted)
+    } catch (error) {
+      throw new Error(
+        `AES decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
   /**
    * Generate cryptographically secure random bytes
    * @param length Number of bytes to generate
