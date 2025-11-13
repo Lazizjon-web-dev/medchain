@@ -1,4 +1,7 @@
-use crate::state::{AccessGrant, MedicalRecord, PatientAccount};
+use crate::{
+    errors::MedChainError,
+    state::{AccessGrant, MedicalRecord, PatientAccount},
+};
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -79,4 +82,29 @@ pub struct RotateRecordKey<'info> {
     pub medical_record: Account<'info, MedicalRecord>,
 
     pub system_program: Program<'info, System>,
+}
+
+// Context for updating a specific doctor's key
+#[derive(Accounts)]
+#[instruction(doctor_wallet: Pubkey)]
+pub struct UpdateDoctorKey<'info> {
+    #[account(mut)]
+    pub patient: Signer<'info>,
+
+    #[account(
+        has_one = authority,
+        seeds = [b"patient", patient.key().as_ref()],
+        bump = patient_account.bump,
+    )]
+    pub patient_account: Account<'info, PatientAccount>,
+
+    pub medical_record: Account<'info, MedicalRecord>,
+
+    #[account(
+        mut,
+        seeds = [b"access_grant", medical_record.key().as_ref(), doctor_wallet.as_ref()],
+        bump = access_grant.bump,
+        constraint = access_grant.patient == patient_account.key() @ MedChainError::Unauthorized,
+    )]
+    pub access_grant: Account<'info, AccessGrant>,
 }
