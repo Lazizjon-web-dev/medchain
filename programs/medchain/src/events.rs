@@ -37,3 +37,13 @@ pub struct RecordKeyRotated {
     pub new_key_version: u64,
     pub rotated_at: i64,
 }
+
+// Event for updating a doctor's encryption key for a medical record
+#[event]
+pub struct DoctorKeyUpdated {
+    pub record: Pubkey,
+    pub doctor: Pubkey,
+    pub patient: Pubkey,
+    pub key_version: u64,
+    pub updated_at: i64,
+}
