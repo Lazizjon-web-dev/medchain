@@ -26,6 +26,63 @@ export class CryptoUtils {
   private static readonly SALT_LENGTH = 16
   private static readonly ITERATIONS = 100000
   
+  /**
+   * Generate cryptographically secure random bytes
+   * @param length Number of bytes to generate
+   * @returns Uint8Array of random bytes
+   * @example
+   * const randomBytes = CryptoUtils.generateRandomBytes(16);
+   * console.log(randomBytes);
+   */
+  static generateRandomBytes(length: number): Uint8Array {
+    const array = new Uint8Array(length) // value range 0-255
+    crypto.getRandomValues(array)
+    return array
+  }
+
+  /**
+   * Generate secure random hash
+   * @param {number} length Length of the hash in characters (default: 32)
+   * @returns {Promise<string>} The generated random hash
+   * @example
+   * const randomHash = await CryptoUtils.generateRandomHash(32);
+   * console.log(randomHash);
+   */
+  static async generateRandomHash(length: number = 32): Promise<string> {
+    const randomBytes = this.generateRandomBytes(length)
+    const hashBuffer = await crypto.subtle.digest(this.HASH_ALGORITHM, Buffer.from(randomBytes))
+    return this.arrayBufferToHex(hashBuffer).substring(0, length)
+  }
+
+  /**
+   * Create SHA-256 hash of data
+   * @param {string} data The input data
+   * @returns {Promise<string>} The hex encoded hash
+   * @example
+   * const hash = await CryptoUtils.hashData('myData');
+   * console.log(hash);
+   */
+  static async hashData(data: string): Promise<string> {
+    const encoder = new TextEncoder()
+    const dataBuffer = encoder.encode(data)
+    const hashBuffer = await crypto.subtle.digest(this.HASH_ALGORITHM, dataBuffer)
+    return this.arrayBufferToHex(hashBuffer)
+  }
+
+  /**
+   * Verify data against hash
+   * @param {string} data The original data
+   * @param {string} hash The hash to verify against
+   * @returns {Promise<boolean>} True if data matches hash, false otherwise
+   * @example
+   * const isValid = await CryptoUtils.verifyHash('myData', 'expectedHash');
+   * console.log(isValid);
+   */
+  static async verifyHash(data: string, hash: string): Promise<boolean> {
+    const dataHash = await this.hashData(data)
+    return this.constantTimeCompare(dataHash, hash)
+  }
+
   // Private utility methods
   /**
    * Export CryptoKey to base64 string
