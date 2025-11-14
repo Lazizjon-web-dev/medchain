@@ -1,13 +1,11 @@
-/// Formats a date string from 'YY-MM-DD' to 'MMM D, YYYY' format
-/// e.g., '22-03-15' -> 'Mar 15, 2022'
-/// @param dateString - The input date string in 'YY-MM-DD' format
-/// @returns The formatted date string in 'MMM D, YYYY' format
-/// @throws Will throw an error if the input date string is not in the expected format
-/// Example usage:
-/// ```ts
-/// const formattedDate = formatDate('22-03-15')
-/// console.log(formattedDate) // Output: 'Mar 15, 2022'
-/// ```
+/** Formats a date string from 'YY-MM-DD' to 'MMM D, YYYY' format
+ * @param dateString - The input date string in 'YY-MM-DD' format
+ * @returns The formatted date string in 'MMM D, YYYY' format
+ * @throws Will throw an error if the input date string is not in the expected format
+ * @example '22-03-15' -> 'Mar 15, 2022'
+ * const formattedDate = formatDate('22-03-15')
+ * console.log(formattedDate) // Output: 'Mar 15, 2022'
+ */
 export default function formatDate(dateString: string): string {
   // Split the input string into year, month, and day components
   const parts: string[] = dateString.split('-')
