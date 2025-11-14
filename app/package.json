@@ -15,7 +15,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@helia/unixfs": "^6.0.3",
     "@tailwindcss/vite": "^4.1.16",
+    "helia": "^6.0.10",
     "pinia": "^3.0.3",
     "tailwindcss": "^4.1.16",
     "vue": "^3.5.22",
