@@ -1,6 +1,6 @@
 use crate::{
     errors::MedChainError,
-    state::{AccessGrant, MedicalRecord, PatientAccount},
+    state::{AccessGrant, DoctorAccount, MedicalRecord, PatientAccount},
 };
 use anchor_lang::prelude::*;
 
@@ -12,6 +12,23 @@ pub struct InitializePatient<'info> {
     #[account(init,
         payer = user, space = PatientAccount::LEN, seeds = [b"patient", user.key().as_ref()], bump)]
     pub patient: Account<'info, PatientAccount>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct InitializeDoctor<'info> {
+    #[account(mut)]
+    pub doctor: Signer<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = doctor,
+        space = DoctorAccount::LEN,
+        seeds = [b"doctor", doctor.key().as_ref()],
+        bump
+    )]
+    pub doctor_account: Account<'info, DoctorAccount>,
+
     pub system_program: Program<'info, System>,
 }
 
