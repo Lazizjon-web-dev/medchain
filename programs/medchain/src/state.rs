@@ -31,7 +31,7 @@ impl AccessGrant {
 }
 
 #[account]
-pub struct Doctor {
+pub struct DoctorAccount {
     pub authority: Pubkey,
     pub name: String,
     pub specialization: String,
@@ -41,7 +41,7 @@ pub struct Doctor {
     pub bump: u8,
 }
 
-impl Doctor {
+impl DoctorAccount {
     pub const LEN: usize = 8 + // Discriminator
     32 + // authority (Pubkey)
     (4 + MAX_NAME_LENGTH) + // name (String prefix + content)
