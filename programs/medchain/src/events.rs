@@ -8,6 +8,16 @@ pub struct PatientInitialized {
     pub timestamp: i64,    // When it was created
 }
 
+// Event for doctor initialization
+#[event]
+pub struct DoctorInitialized {
+    pub doctor: Pubkey,
+    pub authority: Pubkey,
+    pub name: String,
+    pub specialization: String,
+    pub timestamp: i64,
+}
+
 // Event for adding a medical record
 #[event]
 pub struct MedicalRecordAdded {
