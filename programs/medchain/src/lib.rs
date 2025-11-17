@@ -2,12 +2,12 @@ use crate::{
     constants::*,
     errors::MedChainError,
     events::{
-        AccessGranted, DoctorInitialized, DoctorKeyUpdated, MedicalRecordAdded, PatientInitialized,
-        RecordKeyRotated,
+        AccessGranted, DoctorInitialized, DoctorKeyUpdated, DoctorVerified, MedicalRecordAdded,
+        PatientInitialized, RecordKeyRotated,
     },
     instructions::{
         AddMedicalRecord, GrantAccess, InitializeDoctor, InitializePatient, RotateRecordKey,
-        UpdateDoctorKey,
+        UpdateDoctorKey, VerifyDoctor,
     },
 };
 use anchor_lang::prelude::*;
@@ -108,6 +108,24 @@ pub mod medchain {
             name: doctor_account.name.clone(),
             specialization: doctor_account.specialization.clone(),
             timestamp: doctor_account.created_at,
+        });
+
+        Ok(())
+    }
+
+    pub fn verify_doctor(ctx: Context<VerifyDoctor>) -> Result<()> {
+        //! In production, add admin verification here
+        //! For now, we'll trust any signer as admin for demo
+        let doctor_account = &mut ctx.accounts.doctor_account;
+
+        // Mark the doctor as verified
+        doctor_account.verified = true;
+
+        // Emit an event for frontend tracking
+        emit!(DoctorVerified {
+            doctor: doctor_account.key(),
+            verifier: doctor_account.authority,
+            verified_at: Clock::get()?.unix_timestamp,
         });
 
         Ok(())
