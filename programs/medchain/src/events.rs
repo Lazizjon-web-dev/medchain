@@ -18,6 +18,13 @@ pub struct DoctorInitialized {
     pub timestamp: i64,
 }
 
+#[event]
+pub struct DoctorVerified {
+    pub doctor: Pubkey,
+    pub verifier: Pubkey,
+    pub verified_at: i64,
+}
+
 // Event for adding a medical record
 #[event]
 pub struct MedicalRecordAdded {
