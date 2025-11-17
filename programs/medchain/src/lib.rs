@@ -2,10 +2,12 @@ use crate::{
     constants::*,
     errors::MedChainError,
     events::{
-        AccessGranted, DoctorKeyUpdated, MedicalRecordAdded, PatientInitialized, RecordKeyRotated,
+        AccessGranted, DoctorInitialized, DoctorKeyUpdated, MedicalRecordAdded, PatientInitialized,
+        RecordKeyRotated,
     },
     instructions::{
-        AddMedicalRecord, GrantAccess, InitializePatient, RotateRecordKey, UpdateDoctorKey,
+        AddMedicalRecord, GrantAccess, InitializeDoctor, InitializePatient, RotateRecordKey,
+        UpdateDoctorKey,
     },
 };
 use anchor_lang::prelude::*;
@@ -57,6 +59,55 @@ pub mod medchain {
             patient: patient.key(),
             authority: patient.authority,
             timestamp: patient.created_at,
+        });
+
+        Ok(())
+    }
+
+    pub fn initialize_doctor(
+        ctx: Context<InitializeDoctor>,
+        name: String,
+        specialization: String,
+        license_id: String,
+    ) -> Result<()> {
+        // Validate input lengths
+        if name.len() > MAX_NAME_LENGTH {
+            return err!(MedChainError::NameTooLong);
+        }
+        if specialization.len() > MAX_SPECIALIZATION_LENGTH {
+            return err!(MedChainError::SpecializationTooLong);
+        }
+        if license_id.len() > MAX_LICENSE_ID_LENGTH {
+            return err!(MedChainError::LicenseIdTooLong);
+        }
+
+        // Get the doctor account from context
+        let doctor_account = &mut ctx.accounts.doctor_account;
+
+        // Set the authority to the doctor who signed
+        doctor_account.authority = *ctx.accounts.doctor.key;
+
+        // Set the doctor's details
+        doctor_account.name = name;
+        doctor_account.specialization = specialization;
+        doctor_account.license_id = license_id;
+
+        // Initially, the doctor is unverified
+        doctor_account.verified = false;
+
+        // Set creation timestamp using Solana's clock
+        doctor_account.created_at = Clock::get()?.unix_timestamp;
+
+        // Store the PDA bump for future verification
+        doctor_account.bump = ctx.bumps.doctor_account;
+
+        // Emit an event for frontend tracking
+        emit!(DoctorInitialized {
+            doctor: doctor_account.key(),
+            authority: doctor_account.authority,
+            name: doctor_account.name.clone(),
+            specialization: doctor_account.specialization.clone(),
+            timestamp: doctor_account.created_at,
         });
 
         Ok(())
