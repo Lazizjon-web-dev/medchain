@@ -38,6 +38,17 @@ pub struct Doctor {
     pub bump: u8,
 }
 
+impl Doctor {
+    pub const LEN: usize = 8 + // Discriminator
+    32 + // authority (Pubkey)
+    (4 + MAX_NAME_LENGTH) + // name (String prefix + content)
+    (4 + MAX_SPECIALIZATION_LENGTH) + // specialization (String prefix + content)
+    (4 + MAX_LICENSE_ID_LENGTH) + // license_id (String prefix + content)
+    1 + // verified (bool)
+    8 + // created_at (i64)
+    1; // bump (u8)
+}
+
 #[account]
 pub struct MedicalRecord {
     pub patient: Pubkey,
