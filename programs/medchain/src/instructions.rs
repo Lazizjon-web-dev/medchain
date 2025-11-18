@@ -34,7 +34,7 @@ pub struct InitializeDoctor<'info> {
 
 #[derive(Accounts)]
 pub struct VerifyDoctor<'info> {
-    #[account(mut)]A
+    #[account(mut)]
     pub admin: Signer<'info>,
 
     #[account(
