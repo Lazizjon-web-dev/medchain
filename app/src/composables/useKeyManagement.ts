@@ -4,6 +4,7 @@ import { CryptoUtils as crypto } from '../utils/crypto'
 import { FileUtils as file } from '../utils/file'
 import { TypeUtils as typeUtils } from '../utils/type'
 import { PublicKey } from '@solana/web3.js'
+import { ipfsClient } from '../utils/ipfs'
 
 export function useKeyManagement() {
   const { publicKey } = useWallet()
@@ -29,9 +30,9 @@ export function useKeyManagement() {
     } else {
       // 2B. Or re-encrypt existing file
       const medicalRecord = await program.account.medicalRecord.fetch(medicalRecordPda)
-      const currentFile = await downloadFromIPFS(medicalRecord.ipfsHash)
       const currentSymmetricKey = await decryptWithPrivateKey(
         medicalRecord.encryptedKey,
+      const currentFile = await ipfsClient.downloadFile(medicalRecord.ipfsHash)
         patientPrivateKey,
       )
       const decryptedFile = await decryptFile(currentFile, currentSymmetricKey)
@@ -39,7 +40,7 @@ export function useKeyManagement() {
     }
 
     // 3. Upload re-encrypted file to IPFS
-    newIpfsHash = await uploadToIPFS(reencryptedFile)
+    newIpfsHash = await ipfsClient.uploadFile(reencryptedFile)
 
     // 4. Encrypt new symmetric key with patient's public key
     const newEncryptedKeyForPatient = await encryptWithPublicKey(newSymmetricKey, publicKey)
