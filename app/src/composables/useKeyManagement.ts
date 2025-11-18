@@ -30,10 +30,10 @@ export function useKeyManagement() {
     } else {
       // 2B. Or re-encrypt existing file
       const medicalRecord = await program.account.medicalRecord.fetch(medicalRecordPda)
-      const currentSymmetricKey = await decryptWithPrivateKey(
-        medicalRecord.encryptedKey,
       const currentFile = await ipfsClient.downloadFile(medicalRecord.ipfsHash)
-        patientPrivateKey,
+      const currentSymmetricKey = await crypto.decryptWithRSA(
+        typeUtils.arrayBufferToBase64(patientPrivateKey),
+        medicalRecord.encryptedKey,
       )
       const decryptedFile = await decryptFile(currentFile, currentSymmetricKey)
       reencryptedFile = await encryptFile(decryptedFile, newSymmetricKey)
@@ -69,7 +69,10 @@ export function useKeyManagement() {
     newSymmetricKey: Uint8Array,
   ) => {
     // Encrypt new symmetric key with doctor's public key
-    const newEncryptedKeyForDoctor = await encryptWithPublicKey(newSymmetricKey, doctorWallet)
+    const newEncryptedKeyForDoctor = await crypto.encryptWithRSA(
+      doctorWallet.toString(),
+      typeUtils.arrayBufferToBase64(newSymmetricKey),
+    )
 
     const [accessGrantPda] = PublicKey.findProgramAddressSync(
       [Buffer.from('access_grant'), medicalRecordPda.toBuffer(), doctorWallet.toBuffer()],
