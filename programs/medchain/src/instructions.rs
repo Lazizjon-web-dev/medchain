@@ -41,7 +41,7 @@ pub struct VerifyDoctor<'info> {
         mut,
         seeds = [b"doctor", doctor_account.authority.as_ref()],
         bump = doctor_account.bump,
-        constraint = doctor_account.is_verified == false @ MedChainError::AlreadyVerified,
+        constraint = doctor_account.verified == false @ MedChainError::AlreadyVerified,
     )]
     pub doctor_account: Account<'info, DoctorAccount>,
 }
