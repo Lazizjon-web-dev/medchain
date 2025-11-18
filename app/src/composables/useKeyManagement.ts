@@ -1,6 +1,7 @@
 import { useWallet } from './useWallet'
 import { useAnchorProgram } from './useAnchorProgram'
 import { CryptoUtils as crypto } from '../utils/crypto'
+import { FileUtils as file } from '../utils/file'
 import { TypeUtils as typeUtils } from '../utils/type'
 import { PublicKey } from '@solana/web3.js'
 
