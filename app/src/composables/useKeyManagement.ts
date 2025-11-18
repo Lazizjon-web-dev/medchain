@@ -58,4 +58,28 @@ export function useKeyManagement() {
 
     return newIpfsHash
   }
+
+  const updateDoctorKey = async (
+    medicalRecordPda: PublicKey,
+    doctorWallet: PublicKey,
+    newSymmetricKey: Uint8Array,
+  ) => {
+    // Encrypt new symmetric key with doctor's public key
+    const newEncryptedKeyForDoctor = await encryptWithPublicKey(newSymmetricKey, doctorWallet)
+
+    const [accessGrantPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('access_grant'), medicalRecordPda.toBuffer(), doctorWallet.toBuffer()],
+      program.programId,
+    )
+
+    await program.methods
+      .updateDoctorKey(doctorWallet, newEncryptedKeyForDoctor)
+      .accounts({
+        patient: publicKey,
+        patientAccount: patientPda,
+        medicalRecord: medicalRecordPda,
+        accessGrant: accessGrantPda,
+      })
+      .rpc()
+  }
 }
