@@ -18,6 +18,12 @@ pub enum MedChainError {
     AccessExpired,
     #[msg("Access grant revoked")]
     AccessRevoked,
+    #[msg("Doctor already verified")]
+    AlreadyVerified,
+    #[msg("Specialization too long")]
+    SpecializationTooLong,
+    #[msg("License ID too long")]
+    LicenseIdTooLong,
     #[msg("Invalid record ID")]
     InvalidRecordId,
     #[msg("Arithmetic overflow occurred")]
