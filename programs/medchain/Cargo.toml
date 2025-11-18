@@ -9,7 +9,7 @@ crate-type = ["cdylib", "lib"]
 name = "medchain"
 
 [features]
-default = []
+default = ["no-entrypoint", "no-idl", "no-log-ix-name", "idl-build", "anchor-debug", "custom-heap"]
 cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
