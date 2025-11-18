@@ -82,4 +82,27 @@ export function useKeyManagement() {
       })
       .rpc()
   }
+
+  const revokeDoctorAccess = async (medicalRecordPda: PublicKey, doctorWallet: PublicKey) => {
+    const [accessGrantPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('access_grant'), medicalRecordPda.toBuffer(), doctorWallet.toBuffer()],
+      program.programId,
+    )
+
+    await program.methods
+      .revokeAccess()
+      .accounts({
+        patient: publicKey,
+        patientAccount: patientPda,
+        accessGrant: accessGrantPda,
+        medicalRecord: medicalRecordPda,
+      })
+      .rpc()
+  }
+
+  return {
+    rotateRecordKey,
+    updateDoctorKey,
+    revokeDoctorAccess,
+  }
 }
