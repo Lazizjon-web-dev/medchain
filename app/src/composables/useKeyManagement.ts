@@ -3,9 +3,11 @@ import { useAnchorProgram } from './useAnchorProgram'
 import { CryptoUtils as crypto } from '../utils/crypto'
 import { TypeUtils as typeUtils } from '../utils/type'
 import { PublicKey } from '@solana/web3.js'
+
 export function useKeyManagement() {
   const { publicKey } = useWallet()
   const { program } = useAnchorProgram()
+
   const rotateRecordKey = async (
     medicalRecordPda: PublicKey,
     newFile: File, // Optional - if re-encrypting with new file
@@ -100,9 +102,21 @@ export function useKeyManagement() {
       .rpc()
   }
 
+  const bulkRotateKeys = async (
+    medicalRecords: PublicKey[],
+    doctorsToKeep: Map<PublicKey, PublicKey[]>, // Map of record PDA to array of doctor wallets to keep
+  ) => {
+    for (const recordPda of medicalRecords) {
+      const doctorsForThisRecord = doctorsToKeep.get(recordPda) || []
+      await rotateRecordKey(recordPda, null, doctorsForThisRecord)
+    }
+  }
+
   return {
     rotateRecordKey,
     updateDoctorKey,
     revokeDoctorAccess,
+    bulkRotateKeys,
   }
 }
+
