@@ -1,7 +1,4 @@
-use crate::constants::{
-    ENCRYPTED_KEY_LENGTH, IPFS_HASH_LENGTH, MAX_DESCRIPTION_LENGTH, MAX_LICENSE_ID_LENGTH,
-    MAX_NAME_LENGTH, MAX_RECORD_TYPE_LENGTH, MAX_SPECIALIZATION_LENGTH,
-};
+use crate::constants::*;
 use anchor_lang::prelude::*;
 
 #[account]
