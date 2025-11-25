@@ -22,7 +22,7 @@ describe("medchain", () => {
     const patientName = "John Doe";
     const tx = await program.methods
       .initializePatient(patientName)
-      .accounts({ user: patientWallet.publicKey, patient_account: patientPda })
+      .accounts({ user: patientWallet.publicKey, patientAccount: patientPda })
       .rpc();
 
     console.log("Patient account initialized with tx:", tx);
