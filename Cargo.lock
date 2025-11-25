@@ -608,8 +608,6 @@ name = "medchain"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
- "proc-macro2",
- "solana-allocator",
 ]
 
 [[package]]
@@ -857,15 +855,6 @@ dependencies = [
  "solana-program-error",
  "solana-program-memory",
  "solana-pubkey",
-]
-
-[[package]]
-name = "solana-allocator"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18e83c31c62209f12ba649834b0395760ae010a24427cde881aa0bbad5ea706e"
-dependencies = [
- "bytemuck",
 ]
 
 [[package]]

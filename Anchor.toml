@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-medchain = "AYG9C7oh9YMBB5h7bpVztujm6WmYwwi8EsDfqe1GPHLB"
+medchain = "3AARAocLgUP4UR6hYFHZSRwhvUfh4scd1t1ENYDEQTWs"
 
 [registry]
 url = "https://api.apr.dev"
