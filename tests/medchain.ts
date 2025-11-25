@@ -13,12 +13,6 @@ describe("medchain", () => {
   const patientWallet = provider.wallet;
   let patientPda: anchor.web3.PublicKey;
 
-  it("Is initialized!", async () => {
-    // Add your test here.
-    const tx = await program.methods.initialize().rpc();
-    console.log("Your transaction signature", tx);
-  });
-
   it("Initialize Patient Account", async () => {
     [patientPda] = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from("patient"), patientWallet.publicKey.toBuffer()],
