@@ -40,4 +40,79 @@ describe("medchain", () => {
     assert.isTrue(patientAccount.recordCount.isZero());
     expect(patientAccount.createdAt.toNumber()).to.be.above(0); // Should be recent timestamp
   });
+
+  it("Add Medical Record", async () => {
+    [patientPda] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("patient"), patientWallet.publicKey.toBuffer()],
+      program.programId
+    );
+
+    // Get current record count to use as record_id
+    const patientAccount = await program.account.patientAccount.fetch(
+      patientPda
+    );
+    const recordId = patientAccount.recordCount;
+
+    // Derive medical record PDA
+    const [medicalRecordPda] = anchor.web3.PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("record"),
+        patientWallet.publicKey.toBuffer(),
+        new anchor.BN(recordId).toArrayLike(Buffer, "le", 8),
+      ],
+      program.programId
+    );
+
+    // Test data
+    const testData = {
+      ipfsHash: "6z3jFxaOo8mn9XrWiiEiCYUUa8CXLz4y5PABE4p1dGPfGH",
+      recordType: "lab_report",
+      description: "Blood test results",
+      encryptedKey:
+        "2GcR3XW7NBhzxsPUWfRtbzQYJCrYeaHrwrLd2izulYGn4OEZ6POpM17daD57KtN8qItKlOvVCi4zBKMYY0AzLJ30Z3mKJXRX3c5ON9A1UjBBCZEKuGCe3kvnlLHeuiFj",
+    };
+
+    // Add medical record
+    const tx = await program.methods
+      .addMedicalRecord(
+        recordId,
+        testData.recordType,
+        testData.description,
+        testData.ipfsHash,
+        testData.encryptedKey
+      )
+      .accounts({
+        authority: patientWallet.publicKey,
+        patientAccount: patientPda,
+        medicalRecord: medicalRecordPda,
+      })
+      .rpc();
+    console.log("Medical record added:", tx);
+
+    // Verify the medical record was created correctly
+    const medicalRecordAccount = await program.account.medicalRecord.fetch(
+      medicalRecordPda
+    );
+
+    assert.equal(
+      medicalRecordAccount.patient.toString(),
+      patientPda.toString()
+    );
+    expect(medicalRecordAccount.recordId.toNumber()).to.equal(
+      recordId.toNumber()
+    );
+    assert.equal(medicalRecordAccount.ipfsHash, testData.ipfsHash);
+    assert.equal(medicalRecordAccount.recordType, testData.recordType);
+    assert.equal(medicalRecordAccount.description, testData.description);
+    assert.equal(medicalRecordAccount.encryptedKey, testData.encryptedKey);
+    assert.isTrue(medicalRecordAccount.createdAt.gt(new anchor.BN(0)));
+
+    // Verify patient's record count was incremented
+    const updatedPatientAccount = await program.account.patientAccount.fetch(
+      patientPda
+    );
+    expect(updatedPatientAccount.recordCount.toNumber()).to.equal(
+      recordId.toNumber() + 1
+    );
+  });
 });
