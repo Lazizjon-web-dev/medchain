@@ -115,4 +115,67 @@ describe("medchain", () => {
       recordId.toNumber() + 1
     );
   });
+
+  it("Grants Access to Medical Record", async () => {
+    [patientPda] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("patient"), patientWallet.publicKey.toBuffer()],
+      program.programId
+    );
+
+    // Get current record count to use as record_id
+    const patientAccount = await program.account.patientAccount.fetch(
+      patientPda
+    );
+    const recordId = patientAccount.recordCount.sub(new anchor.BN(1));
+
+    // Derive medical record PDA
+    const [medicalRecordPda] = anchor.web3.PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("record"),
+        patientWallet.publicKey.toBuffer(),
+        new anchor.BN(recordId).toArrayLike(Buffer, "le", 8),
+      ],
+      program.programId
+    );
+
+    // New doctor wallet to grant access
+    const doctorKeypair = anchor.web3.Keypair.generate();
+    const doctorPubkey = doctorKeypair.publicKey;
+
+    const durationInDays = 5;
+    const encryptedKeyForDoctor = "g18EWbM/2ESEApo4E5c0dQ==";
+
+    // Grant access
+    const tx = await program.methods
+      .grantAccess(
+        doctorPubkey,
+        new anchor.BN(durationInDays),
+        encryptedKeyForDoctor
+      )
+      .accounts({
+        authority: patientWallet.publicKey,
+        patientAccount: patientPda,
+        medicalRecord: medicalRecordPda,
+      })
+      .rpc();
+    console.log("Access granted to doctor:", tx);
+
+    // Verify access was granted
+    const medicalRecordAccount = await program.account.medicalRecord.fetch(
+      medicalRecordPda
+    );
+
+    // Fetch all access grants with the given doctorPubkey
+    const accessEntry = await program.account.accessGrant
+      .all()
+      .then((entries) => {
+        return entries.find(
+          (entry) => entry.account.doctor.toString() === doctorPubkey.toString()
+        );
+      });
+    assert.isDefined(accessEntry, "Access entry for doctor not found");
+    expect(accessEntry.account.record.toString()).to.eq(
+      medicalRecordPda.toString()
+    );
+  });
 });
