@@ -63,4 +63,12 @@ pub mod medchain {
     ) -> Result<()> {
         instructions::rotate_record_key::handler(ctx, new_ipfs_hash, new_encrypted_key)
     }
+
+    pub fn update_doctor_key(
+        ctx: Context<UpdateDoctorKey>,
+        doctor_account: Pubkey,
+        new_encrypted_key: String,
+    ) -> Result<()> {
+        instructions::update_doctor_key::handler(ctx, doctor_account, new_encrypted_key)
+    }
 }
