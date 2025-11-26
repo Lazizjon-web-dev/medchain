@@ -50,7 +50,7 @@ pub struct AccessGranted {
 #[event]
 pub struct RecordKeyRotated {
     pub record: Pubkey,
-    pub patient: Pubkey,
+    pub authority: Pubkey,
     pub new_key_version: u64,
     pub rotated_at: i64,
 }
