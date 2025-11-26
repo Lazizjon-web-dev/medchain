@@ -127,7 +127,7 @@ describe("medchain", () => {
     );
 
     assert.equal(
-      medicalRecordAccount.patient.toString(),
+      medicalRecordAccount.authority.toString(),
       patientPda.toString()
     );
     expect(medicalRecordAccount.recordId.toNumber()).to.equal(

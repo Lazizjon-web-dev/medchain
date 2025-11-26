@@ -40,7 +40,7 @@ pub fn handler(
 ) -> Result<()> {
     // Verify that the medical record belongs to the patient
     require!(
-        ctx.accounts.medical_record.patient == ctx.accounts.patient_account.key(),
+        ctx.accounts.medical_record.authority == ctx.accounts.patient_account.key(),
         MedChainError::Unauthorized
     );
     // Validate input length

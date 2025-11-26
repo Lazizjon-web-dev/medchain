@@ -51,7 +51,7 @@ impl DoctorAccount {
 
 #[account]
 pub struct MedicalRecord {
-    pub patient: Pubkey,
+    pub authority: Pubkey,
     pub record_id: u64,
     pub ipfs_hash: String,
     pub record_type: String,

@@ -67,7 +67,7 @@ pub fn handler(
 
     // Populate the medical record account
     let medical_record = &mut ctx.accounts.medical_record;
-    medical_record.patient = patient_account.key();
+    medical_record.authority = patient_account.key();
     medical_record.record_id = record_id;
     medical_record.ipfs_hash = ipfs_hash;
     medical_record.record_type = record_type;
