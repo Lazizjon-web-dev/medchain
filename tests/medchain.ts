@@ -160,11 +160,6 @@ describe("medchain", () => {
       .rpc();
     console.log("Access granted to doctor:", tx);
 
-    // Verify access was granted
-    const medicalRecordAccount = await program.account.medicalRecord.fetch(
-      medicalRecordPda
-    );
-
     // Fetch all access grants with the given doctorPubkey
     const accessEntry = await program.account.accessGrant
       .all()
