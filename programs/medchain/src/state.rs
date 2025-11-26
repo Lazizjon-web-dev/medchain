@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct AccessGrant {
     pub record: Pubkey,
-    pub patient: Pubkey,
+    pub authority: Pubkey, // Patient
     pub doctor: Pubkey,
     pub encrypted_key: String, // Encrypted with public key of the doctor
     pub key_version: u64,

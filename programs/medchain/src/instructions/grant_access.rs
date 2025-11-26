@@ -55,7 +55,7 @@ pub fn handler(
 
     // Setup access grant details
     access_grant.record = ctx.accounts.medical_record.key();
-    access_grant.patient = ctx.accounts.patient_account.key();
+    access_grant.authority = ctx.accounts.patient_account.key();
     access_grant.doctor = doctor;
     access_grant.encrypted_key = encrypted_key_for_doctor;
     access_grant.key_version = 1; // Initial version
