@@ -12,6 +12,7 @@ describe("medchain", () => {
 
   const patientWallet = provider.wallet;
   let patientPda: anchor.web3.PublicKey;
+  let doctorPda: anchor.web3.PublicKey;
 
   it("Initialize Patient Account", async () => {
     [patientPda] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -39,6 +40,37 @@ describe("medchain", () => {
     expect(patientAccount.name).to.equal(patientName);
     assert.isTrue(patientAccount.recordCount.isZero());
     expect(patientAccount.createdAt.toNumber()).to.be.above(0); // Should be recent timestamp
+  });
+
+  it("Initialize Doctor Account", async () => {
+    [doctorPda] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("doctor"), patientWallet.publicKey.toBuffer()],
+      program.programId
+    );
+
+    const doctorName = "Dr. Smith";
+    const specialization = "Cardiology";
+    const licenseId = "MED123456";
+    const tx = await program.methods
+      .initializeDoctor(doctorName, specialization, licenseId)
+      .accounts({
+        authority: patientWallet.publicKey,
+        doctorAccount: doctorPda,
+      })
+      .rpc();
+
+    console.log("Doctor account initialized with tx:", tx);
+
+    // Fetch the doctor account and verify the data
+    const doctorAccount = await program.account.doctorAccount.fetch(doctorPda);
+    // Verify the account data
+    expect(doctorAccount.authority.toString()).to.equal(
+      patientWallet.publicKey.toString()
+    );
+    expect(doctorAccount.name).to.equal(doctorName);
+    expect(doctorAccount.specialization).to.equal(specialization);
+    expect(doctorAccount.licenseId).to.equal(licenseId);
+    expect(doctorAccount.createdAt.toNumber()).to.be.above(0); // Should be recent timestamp
   });
 
   it("Add Medical Record", async () => {
