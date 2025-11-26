@@ -55,4 +55,12 @@ pub mod medchain {
     ) -> Result<()> {
         instructions::grant_access::handler(ctx, doctor, duration_days, encrypted_key_for_doctor)
     }
+
+    pub fn rotate_record_key(
+        ctx: Context<RotateRecordKey>,
+        new_ipfs_hash: String,
+        new_encrypted_key: String,
+    ) -> Result<()> {
+        instructions::rotate_record_key::handler(ctx, new_ipfs_hash, new_encrypted_key)
+    }
 }
