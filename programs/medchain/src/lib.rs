@@ -20,6 +20,15 @@ pub mod medchain {
         instructions::initialize_patient::handler(ctx, name)
     }
 
+    pub fn initialize_doctor(
+        ctx: Context<InitializeDoctor>,
+        name: String,
+        specialization: String,
+        license_id: String,
+    ) -> Result<()> {
+        instructions::initialize_doctor::handler(ctx, name, specialization, license_id)
+    }
+
     pub fn add_medical_record(
         ctx: Context<AddMedicalRecord>,
         record_id: u64,
