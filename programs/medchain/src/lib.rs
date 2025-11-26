@@ -46,17 +46,7 @@ pub mod medchain {
             encrypted_key,
         )
     }
-    /*
 
-    pub fn initialize_doctor(
-        ctx: Context<InitializeDoctor>,
-        name: String,
-        specialization: String,
-        license_id: String,
-    ) -> Result<()> {
-        instructions::initialize_doctor::handler(ctx, name, specialization, license_id)
-    }
-    */
     pub fn grant_access(
         ctx: Context<GrantAccess>,
         doctor: Pubkey,
