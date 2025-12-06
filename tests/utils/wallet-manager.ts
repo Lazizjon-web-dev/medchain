@@ -42,4 +42,22 @@ export class TestWalletManager {
       );
     }
   }
+
+  getNextWallet(): { wallet: Wallet; index: number } {
+    if (this.wallets.length === 0) {
+      throw new Error(
+        "WalletManager not initialized. Call initialize() first."
+      );
+    }
+
+    for (let i = 0; i < this.wallets.length; i++) {
+      const index = (this.currentIndex + i) % this.wallets.length;
+
+      if (!this.usedIndices.has(index)) {
+        this.usedIndices.add(index);
+        this.currentIndex = (index + 1) % this.wallets.length;
+        return { wallet: this.wallets[index], index };
+      }
+    }
+  }
 }
