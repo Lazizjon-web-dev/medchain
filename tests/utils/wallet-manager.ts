@@ -7,11 +7,18 @@ export class TestWalletManager {
   private usedIndices: Set<number> = new Set();
   private currentIndex: number = -1;
 
+  private connection: Connection;
+  private initialWalletCount: number;
+  private initialBalance: number;
   constructor(
-    private connection: Connection,
-    private initialWalletCount: number = 10,
-    private initialBalance: number = 1 * anchor.web3.LAMPORTS_PER_SOL
-  ) {}
+    connection: Connection,
+    initialWalletCount: number = 10,
+    initialBalance: number = 1 * anchor.web3.LAMPORTS_PER_SOL
+  ) {
+    this.connection = connection;
+    this.initialWalletCount = initialWalletCount;
+    this.initialBalance = initialBalance;
+  }
 
   async initialize(): Promise<void> {
     for (let i = 0; i < this.initialWalletCount; i++) {
