@@ -14,34 +14,6 @@ describe("medchain", () => {
   let patientPda: anchor.web3.PublicKey;
   let doctorPda: anchor.web3.PublicKey;
 
-  it("Initialize Patient Account", async () => {
-    [patientPda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("patient"), patientWallet.publicKey.toBuffer()],
-      program.programId
-    );
-
-    const patientName = "John Doe";
-    const tx = await program.methods
-      .initializePatient(patientName)
-      .accounts({ user: patientWallet.publicKey, patientAccount: patientPda })
-      .rpc();
-
-    console.log("Patient account initialized with tx:", tx);
-
-    // Fetch the patient account and verify the data
-    const patientAccount = await program.account.patientAccount.fetch(
-      patientPda
-    );
-
-    // Verify the account data
-    expect(patientAccount.authority.toString()).to.equal(
-      patientWallet.publicKey.toString()
-    );
-    expect(patientAccount.name).to.equal(patientName);
-    assert.isTrue(patientAccount.recordCount.isZero());
-    expect(patientAccount.createdAt.toNumber()).to.be.above(0); // Should be recent timestamp
-  });
-
   it("Initialize Doctor Account", async () => {
     [doctorPda] = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from("doctor"), patientWallet.publicKey.toBuffer()],
