@@ -24,6 +24,7 @@ pub struct InitializePatient<'info> {
 pub fn handler(ctx: Context<InitializePatient>, name: String) -> Result<()> {
     // Validate input length
     require!(name.len() <= MAX_NAME_LENGTH, MedChainError::NameTooLong);
+    require!(!name.is_empty(), MedChainError::NameEmpty);
 
     //
     let patient = &mut ctx.accounts.patient_account;

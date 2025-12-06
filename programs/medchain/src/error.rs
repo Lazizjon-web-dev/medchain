@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum MedChainError {
+    #[msg("Patient name cannot be empty")]
+    NameEmpty,
     #[msg("Patient name too long")]
     NameTooLong,
     #[msg("Record type too long")]
