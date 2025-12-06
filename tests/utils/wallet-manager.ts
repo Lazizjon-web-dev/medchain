@@ -5,8 +5,7 @@ import { Keypair, PublicKey, Connection } from "@solana/web3.js";
 export class TestWalletManager {
   private wallets: Wallet[] = [];
   private usedIndices: Set<number> = new Set();
-  private currentIndex: number = -1;
-
+  private currentIndex: number = 0;
   private connection: Connection;
   private initialWalletCount: number;
   private initialBalance: number;
