@@ -142,11 +142,7 @@ describe("Patient Accounts", () => {
         .accounts({ user: patientWallet.publicKey, patientAccount: patientPda })
         .rpc();
     } catch (error) {
-      if (error.error.errorCode.code === "NameTooLong") {
-        console.log("Expected failure for empty name:", error.error);
-        return;
-      }
-      throw error;
+      if (error.error.errorCode.code !== "NameEmpty") throw error;
     }
   });
   it("Initialize with name exceeding maximum length should fail", async () => {
@@ -170,11 +166,7 @@ describe("Patient Accounts", () => {
         .accounts({ user: patientWallet.publicKey, patientAccount: patientPda })
         .rpc();
     } catch (error) {
-      if (error.error.errorCode.code === "NameTooLong") {
-        console.log("Expected failure for long name:", error.error);
-        return;
-      }
-      throw error;
+      if (error.error.errorCode.code !== "NameTooLong") throw error;
     }
   });
   it("Duplicate patient account initialization should fail", async () => {
@@ -204,10 +196,10 @@ describe("Patient Accounts", () => {
         .initializePatient(patientName)
         .accounts({ user: patientWallet.publicKey, patientAccount: patientPda })
         .rpc();
-      assert.fail("Duplicate initialization should have failed");
     } catch (error) {
-      console.log("Expected failure for duplicate initialization:", error);
+      return;
     }
+    throw new Error("Duplicate initialization should have failed");
   });
   it("Initialize with non-signer wallet should fail", async () => {
     const { wallet: patientWallet } = walletManager.getNextWallet();
@@ -229,9 +221,9 @@ describe("Patient Accounts", () => {
         .initializePatient(patientName)
         .accounts({ user: patientWallet.publicKey, patientAccount: patientPda })
         .rpc();
-      assert.fail("Initialization with non-signer should have failed");
     } catch (error) {
-      console.log("Expected failure for non-signer initialization:", error);
+      return;
     }
+    throw new Error("Initialization with non-signer should have failed");
   });
 });
