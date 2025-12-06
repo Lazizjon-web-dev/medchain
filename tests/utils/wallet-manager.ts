@@ -59,5 +59,16 @@ export class TestWalletManager {
         return { wallet: this.wallets[index], index };
       }
     }
+
+    const newKeypair = Keypair.generate();
+    const newWallet = new Wallet(newKeypair);
+    this.wallets.push(newWallet);
+    const newIndex = this.wallets.length - 1;
+    this.usedIndices.add(newIndex);
+
+    return {
+      wallet: newWallet,
+      index: newIndex,
+    };
   }
 }
