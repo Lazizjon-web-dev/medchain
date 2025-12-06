@@ -72,6 +72,28 @@ export class TestWalletManager {
     };
   }
 
+  getWallet(index: number): Wallet {
+    if (index < 0 || index >= this.wallets.length) {
+      throw new Error("Index out of bounds");
+    }
+    return this.wallets[index];
+  }
+
+  getProgramWithWallet<T extends anchor.Idl>(
+    programIdl: T,
+    programId: PublicKey,
+    wallet: Wallet
+  ): anchor.Program<T> {
+    const provider = new anchor.AnchorProvider(this.connection, wallet, {
+      commitment: "confirmed",
+    });
+    return new anchor.Program<T>(programIdl, provider);
+  }
+
+  releaseWallet(index: number): void {
+    this.usedIndices.delete(index);
+  }
+
   *walletIterator(): Generator<
     { wallet: Wallet; index: number },
     void,
@@ -80,5 +102,17 @@ export class TestWalletManager {
     while (true) {
       yield this.getNextWallet();
     }
+  }
+
+  getAllWallets(): Wallet[] {
+    return [...this.wallets];
+  }
+
+  getWalletCount(): number {
+    return this.wallets.length;
+  }
+
+  getUsedWalletCount(): number {
+    return this.usedIndices.size;
   }
 }
