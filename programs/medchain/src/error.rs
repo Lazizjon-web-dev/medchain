@@ -4,6 +4,8 @@ use anchor_lang::prelude::*;
 pub enum MedChainError {
     #[msg("Patient name cannot be empty")]
     NameEmpty,
+    #[msg("IPFS hash cannot be empty")]
+    IpfsHashEmpty,
     #[msg("Patient name too long")]
     NameTooLong,
     #[msg("Record type too long")]

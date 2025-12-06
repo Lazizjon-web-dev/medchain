@@ -51,6 +51,7 @@ pub fn handler(
         ipfs_hash.len() <= IPFS_HASH_LENGTH,
         MedChainError::IpfsHashTooLong
     );
+    require!(!ipfs_hash.is_empty(), MedChainError::IpfsHashEmpty);
     require!(
         encrypted_key.len() <= ENCRYPTED_KEY_LENGTH,
         MedChainError::EncryptedKeyTooLong
