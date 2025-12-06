@@ -71,4 +71,14 @@ export class TestWalletManager {
       index: newIndex,
     };
   }
+
+  *walletIterator(): Generator<
+    { wallet: Wallet; index: number },
+    void,
+    unknown
+  > {
+    while (true) {
+      yield this.getNextWallet();
+    }
+  }
 }
