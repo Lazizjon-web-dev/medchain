@@ -10,8 +10,6 @@
     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
     <g id="SVGRepo_iconCarrier">
       <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-      <title>ic_fluent_people_28_regular</title>
-      <desc>Created with Sketch.</desc>
       <g id="🔍-Product-Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="ic_fluent_people_28_regular" fill="#212121" fill-rule="nonzero">
           <path
