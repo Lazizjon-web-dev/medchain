@@ -23,7 +23,7 @@
           C13.8954 14 13 14.8954 13 16
           M17 16
           L20 16"
-        stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> 
+        stroke="#000018" stroke-width="1.5" stroke-linecap="round"></path> 
     </g>
   </svg>
 </template>
