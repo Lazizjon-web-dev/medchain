@@ -33,6 +33,9 @@ import WalletConnector from './WalletConnector.vue';
           <li>
             <RouterLink to="/patients">Patients</RouterLink>
           </li>
+          <li>
+            <RouterLink to="/records">Records</RouterLink>
+          </li>
           <!-- More navigation items 
           <li>
             <RouterLink to="/departments">Departments</RouterLink>
